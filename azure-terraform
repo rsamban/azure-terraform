@@ -1,0 +1,125 @@
+#!/usr/bin/bash
+
+
+requirements() {
+    found=0
+
+    azure_version=$(azure -v)
+    if [ $? -eq 0 ]; then
+	found=$((found + 1))
+	echo "Found azure-cli version: $azure_version"
+    else
+	echo "azure-cli is missing. Please install azure-cli from"
+	echo "https://azure.microsoft.com/en-us/documentation/articles/xplat-cli-install/"
+    fi
+
+    jqversion=$(jq --version)
+    if [ $? -eq 0 ]; then
+	found=$((found + 1))
+	echo "Found jq version: $jqversion"
+    else
+	echo "jq is missing. Please install jq from"
+	echo "https://stedolan.github.io/jq/"
+    fi
+
+
+    azurespversion=$(azure-sp-tool --version)
+    if [ $? -eq 0 ]; then
+	found=$((found + 1))
+	echo "Found azure-sp-tool  version: $azurespversion"
+    else
+	echo "azure-sp-tool is missing. Please install azure-sp-tool from"
+	echo "https://github.com/danhigham/azure-sp-tool"
+    fi
+
+    terraformversion=$(terraform --version)
+    if [ $? -eq 0 ]; then
+	found=$((found + 1))
+	echo "Found terraform  version: $terraformversion"
+    else
+	echo "terraform is missing. Please install terraform from"
+	echo "https://www.terraform.io/intro/getting-started/install.html"
+    fi
+
+
+    if [ $found -lt 4 ]; then
+	echo "Not all required tools are installed"
+	return
+    fi
+}
+
+setup() {
+
+    azure login
+
+    echo "Please verify your account in use"
+    azure account list
+
+    azure-sp-tool create-sp
+
+    echo "setting environment variables"
+    setenv
+
+    // change plan to apply to create resources
+    terraform plan 
+    
+    echo "To create resource, change 'terraform plan' to 'terraform apply'"
+}
+
+setenv() {
+    if [ ! -e azure-credentials.json ]; then
+	echo "Your azure-credentials.json file is missing"
+	return
+    fi
+    export TF_VAR_subscriptionid=$(jq '.["subscriptionID"]' azure-credentials.json)
+    export TF_VAR_clientid=$(jq '.["clientID"]' azure-credentials.json)
+    export TF_VAR_tenantid=$(jq '.["tenantID"]' azure-credentials.json)
+    export TF_VAR_clientsecret=$(jq '.["clientSecret"]' azure-credentials.json)
+
+}
+
+showenv() {
+
+    echo "Using clientid of $TF_VAR_clientid"
+    echo "Using subscriptionid of $TF_VAR_subscriptionid"
+    echo "Using tenantid of $TF_VAR_tenantid"
+    echo "Using clientsecret of $TF_VAR_clientsecret"
+}
+
+unsetenv() {
+
+    unset  TF_VAR_subscriptionid
+    unset  TF_VAR_clientid
+    unset  TF_VAR_tenantid
+    unset  TF_VAR_clientsecret
+
+    unset  subscriptionid
+    unset  clientid
+    unset  tenantid
+    unset  clientsecret
+
+}
+showhelp() {
+   echo "usage: azure-terraform <requirements | setup | showenv | setenv>"
+}
+case "$1" in
+    requirements)
+	requirements
+	;;
+    setup)
+	setup
+	;;
+    setenv)
+	setenv
+	;;
+    showenv)
+	showenv
+	;;
+    unsetenv)
+	unsetenv
+	;;
+
+    *)
+	showhelp
+	;;
+esac
