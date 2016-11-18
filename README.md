@@ -13,7 +13,7 @@ jq: Install from https://stedolan.github.io/jq/
 azure-sp-tools: Install from https://stedolan.github.io/jq/
 
 ### Usage
-   "azure-terraform <requirements | setup | showenv | setenv>"
+   azure-terraform \<requirements | setup | showenv | setenv\>
 
 ### Note
 Set username/password needed for the jumpbox virtual machinne in the azure-terraform.tf script.
