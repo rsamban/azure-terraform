@@ -10,7 +10,7 @@ Terraform: Install from "https://www.terraform.io/intro/getting-started/install.
 
 jq: Install from https://stedolan.github.io/jq/
 
-azure-sp-tools: Install from https://stedolan.github.io/jq/
+azure-sp-tools: Install from https://www.npmjs.com/package/azure-sp-tool
 
 ### Usage
    azure-terraform \<requirements | setup | showenv | setenv\>
